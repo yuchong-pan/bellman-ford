@@ -1,0 +1,168 @@
+
+\documentclass[letterpaper,reqno,12pt]{article}
+\usepackage[margin=1.0in]{geometry}
+\usepackage{color,latexsym,amsmath,amssymb}
+\usepackage{fancyhdr}
+\usepackage{amsthm}
+\usepackage[linesnumbered,lined,boxed,commentsnumbered,noend,noline]{algorithm2e}
+\usepackage{dsfont}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{lmodern}
+\usepackage[numbers]{natbib}
+\usepackage{listings}% http://ctan.org/pkg/listings
+\lstset{
+  basicstyle=\ttfamily,
+  columns=fullflexible,
+  mathescape
+}
+
+\setlength{\AlCapSkip}{0.5em}
+
+\allowdisplaybreaks
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\mynote}[3][red]
+  {{\color{#1} \fbox{\bfseries\sffamily\scriptsize#2}
+  {\small$\blacktriangleright$\textsf{\emph{#3}}$\blacktriangleleft$}}~}
+\newcommand{\yp}[1]{\mynote{YP}{#1}}
+\DeclareMathOperator{\conv}{conv}
+\DeclareMathOperator{\charcone}{char.cone}
+\DeclareMathOperator{\STAB}{STAB}
+\DeclareMathOperator{\Down}{Down}
+\DeclareMathOperator{\lca}{lca}
+\DeclareMathOperator{\LPO}{LPO}
+\DeclareMathOperator{\OPT}{OPT}
+\DeclareMathOperator{\LHS}{LHS}
+\DeclareMathOperator{\RHS}{RHS}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\vol}{vol}
+\DeclareMathOperator{\argmin}{arg\,min}
+\DeclareMathOperator{\argmax}{arg\,max}
+\DeclareMathOperator{\poly}{poly}
+\begin{document}
+\pagenumbering{arabic}
+\title{Network Flow Algorithms: Exercise 1.4}
+\author{Yuchong Pan}
+\date{\today}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{claim}{Claim}
+\theoremstyle{definition} \newtheorem{exercise}{Exercise} [section]
+\theoremstyle{definition} \newtheorem{defn}{Definition}
+\maketitle
+%
+
+We re-define $d_k(j)$ to be the length of the shortest $s$-$j$ path of length $k$, as in R.\ M.\ Karp's original paper \cite{karp1978characterization}.
+
+Let $c' = c - \mu$. Let $\Gamma_0$ be a cycle of $G$. Then we have that
+\begin{align*}
+  c'\left(\Gamma_0\right) &= \sum_{e \in E\left(\Gamma_0\right)} c'(e) = \sum_{e \in E\left(\Gamma_0\right)} (c(e) - \mu) = \sum_{e \in E\left(\Gamma_0\right)} c(e) - \left|\Gamma_0\right| \mu = c\left(\Gamma_0\right) - \left|\Gamma_0\right| \min_{\text{cycle $\Gamma$ of $G$}} \frac{c(\Gamma)}{|\Gamma|} \\
+  &\geq c\left(\Gamma_0\right) - \left|\Gamma_0\right| \cdot \frac{c\left(\Gamma_0\right)}{\left|\Gamma_0\right|} = c\left(\Gamma_0\right) - c\left(\Gamma_0\right) = 0.
+\end{align*}
+This shows that $G$ with edge costs $c'$ does not have negative-cost cycles. Hence, the Bellman-Ford algorithm correctly computes the shortest $s$-$j$ paths for all $j \in V$. Let $d_k'(j)$ be the length of the shortest $s$-$j$ path of length $k$ with edge costs $c'$. By Exercise 1.2, there exists a simple shortest path $P_j$ from $s$ to any $j \in V$, which is of length $< n$. Hence, $c'(P_j) = \min_{0 \leq k \leq n - 1} d_k'(j)$ and $c'(P_j) \leq d_n'(j)$ for all $j \in V$. This implies that $d_n'(j) \geq \min_{0 \leq k \leq n - 1} d_k'(j)$ for all $j \in V$. On the other hand, let $\Gamma^* = \argmin_{\text{cycle $\Gamma$ of $G$}} \frac{c(\Gamma)}{|G|}$. Then we have that
+$$ c'\left(\Gamma^*\right) = c\left(\Gamma^*\right) - \left|\Gamma^*\right| \min_{\text{cycle $\Gamma$ of $G$}} \frac{c(\Gamma)}{|\Gamma|} = c\left(\Gamma^*\right) - \left|\Gamma^*\right| \cdot \frac{c\left(\Gamma^*\right)}{\left|\Gamma^*\right|} = c\left(\Gamma^*\right) - c\left(\Gamma^*\right) = 0. $$
+Let $v \in V(\Gamma^*)$. Let $P$ be a simple shortest $s$-$v$ path. Then $|P| < n$. Let $\ell \in \NN$ be such that $|P| + \ell |\Gamma^*| \geq n$. Then $P$ appended by $\ell$ copies of $\Gamma^*$, denoted by $P'$, is also a shortest $s$-$v$ path. Hence, the subpath of $P'$ formed by the first $n$ edges of $P'$, which is an $s$-$v^*$ path for some $v^* \in V$, is a shortest $s$-$v^*$ path. Therefore, $d_n'(v^*) = c'(P_{v^*}) = \min_{0 \leq k \leq n - 1} d_k'(v^*)$. This proves that
+$$ \min_{j \in V} \max_{0 \leq k \leq n - 1} \frac{d_n'(j) - d_k'(j)}{n - k} = 0. $$
+Let $j \in V$. Let $0 \leq k \leq n$. Let $P$ be a shortest $s$-$j$ path of length $k$. Then $d_k(j) = c(P)$. It is clear that $P$ is also a shortest $s$-$j$ path of length $k$ with edge costs $c'$. Hence, $d_k'(j) = c'(P)$. Since $d_k(j)$ is a path of length $k$, then we have that
+\begin{align*}
+  d_k(j) &= \sum_{e \in E(P)} c(e) = \sum_{e \in E(P)} (c(e) - \mu + \mu) = \sum_{e \in E(P)} (c(e) - \mu) + |P| \mu = \sum_{e \in E(P)} c'(e) + k \mu \\
+  &= c'(P) + k\mu = d_k'(j) + k\mu.
+\end{align*}
+Hence, we have that
+\begin{align*}
+  \min_{j \in V} \max_{0 \leq k \leq n - 1} \frac{d_n(j) - d_k(j)}{n - k} &= \min_{j \in V} \max_{0 \leq k \leq n - 1} \frac{\left(d_n'(j) + n\mu\right) - \left(d_k'(j) + k\mu\right)}{n - k} \\
+  &= \min_{j \in V} \max_{0 \leq k \leq n - 1} \frac{d_n'(j) - d_k'(j) + (n - k) \mu}{n - k} \\
+  &= \min_{j \in V} \max_{0 \leq k \leq n - 1} \left(\frac{d_n'(j) - d_k'(j)}{n - k} + \mu\right) \\
+  &= \min_{j \in V} \max_{0 \leq k \leq n - 1} \frac{d_n'(j) - d_k'(j)}{n - k} + \mu \\
+  &= 0 + \mu = \mu.
+\end{align*}
+
+Next, we show that $d_k(j)$ can be computed by the following recurrence:
+$$ d_k(j) = \left\{
+  \begin{array}{ll}
+    \min_{(i, j) \in E} \left(d_{k - 1}(i) + c(i, j)\right), & k > 0, \\
+    0, & k = 0, j = s, \\
+    \infty, & k = 0, j \neq s.
+  \end{array}
+\right. $$
+It is clear that $d_0(s) = 0$ and $d_0(j) = \infty$ for all $j \in V \setminus \{ s \}$. Let $1 \leq k \leq n$. Let $j \in V$. Let $P$ be a shortest $s$-$j$ path of length $k$. Let $(i^*, j)$ be the last edge of $P$. Then the subpath $P'$ formed by all edges of $P$ except $(i^*, j)$ is a shortest $s$-$i^*$ path of length $k - 1$. Hence, $c(P') = d_{k - 1}(i^*)$. This implies that
+$$ d_k(j) = c(P) = c(P') + c(i^*, j) = d_{k - 1}(i^*) + c(i^*, j) \geq \min_{(i, j) \in E} \left(d_{k - 1}(i) + c(i, j)\right). $$
+For all $(i, j) \in E$, if $P_i$ is a shortest $s$-$i$ path of length $k - 1$, then $P_i$ appended by $(i, j)$ is an $s$-$j$ path, so $d_{k - 1}(i) + c(i, j) = c(P_i) + c(i, j) \geq d_k(j)$. This implies that $\min_{(i, j) \in E} (d_{k - 1}(i) + c(i, j)) \geq d_k(j)$. This proves the recurrence. We give Algorithm \ref{alg:min-mean-cost-cycle-value} to compute $\mu$. It is clear that the running time of Algorithm \ref{alg:min-mean-cost-cycle-value} is $O(nm)$.
+
+\begin{algorithm}
+  $d_0(s) \leftarrow 0$ \\
+  $d_k(j) \leftarrow \infty$ for all $1 \leq k \leq n, j \in V$ \\
+  \For{$k \leftarrow 1, \ldots, n$}{
+    \For{$(i, j) \in E$}{
+      $d_k(j) \leftarrow \min(d_k(j), d_{k - 1}(i) + c(i, j))$
+    }
+  }
+  $\mu \leftarrow \infty$ \\
+  \For{$j \in V$}{
+    $\nu \leftarrow -\infty$ \\
+    \For{$k \leftarrow 0, \ldots, n - 1$}{
+      $\nu \leftarrow \max(\nu, \frac{d_n(j) - d_k(j)}{n - j})$
+    }
+    $\mu \leftarrow \min(\mu, \nu)$
+  }
+  \caption{An algorithm for computing the cost of the minimum mean-cost cycle.}
+  \label{alg:min-mean-cost-cycle-value}
+\end{algorithm}
+
+Finally, we give Algorithm \ref{alg:min-mean-cost-cycle} to compute a cycle $\Gamma$ such that $\mu = \frac{c(\Gamma)}{|\Gamma|}$. It is clear that the running time of Algorithm \ref{alg:min-mean-cost-cycle} is $O(nm)$. It remains to show that $\Gamma^*$ returned by Algorithm \ref{alg:min-mean-cost-cycle} satisfies $\frac{c(\Gamma)}{|\Gamma|} = \mu$. We note that $p_k(j)$ stores a shortest $s$-$j$ path of length $k$ by following $p_k(j)$ backwards. Hence, $P$ is a shortest $s$-$j^*$ path of length $n$. This implies that $P$ is not simple and hence contains a cycle $\Gamma$. Since $\frac{d_n(j^*) - d_{k^*}(j^*)}{n - k^*} = \mu$, then we have that
+\begin{align*}
+  \frac{d_n'\left(j^*\right) - d_{k^*}'\left(j^*\right)}{n - k^*} &= \frac{\left(d_n\left(j^*\right) - n\mu\right)- \left(d_{k^*}\left(j^*\right) - k^* \mu\right)}{n - k^*} = \frac{d_n\left(j^*\right) - d_{k^*}\left(j^*\right) - \left(n - k^*\right) \mu}{n - k^*} \\
+  &= \frac{d_n\left(j^*\right) - d_{k^*}\left(j^*\right)}{n - k^*} - \mu = \mu - \mu = 0.
+\end{align*}
+This implies that $d_n'(j^*) = d_{k^*}'(j^*) = \min_{0 \leq k \leq n - 1} d_k'(j^*)$ is the length of the shortest $s$-$j^*$ path. Hence, cycle $\Gamma^*$ contained in $P$ must have cost $0$ with edge costs $c'$, since we could have eliminated $\Gamma^*$ to get a lower cost. We have that
+\begin{align*}
+  \frac{c\left(\Gamma^*\right)}{\left|\Gamma^*\right|} &= \frac{\sum_{e \in E\left(\Gamma^*\right)} c(e)}{\left|\Gamma^*\right|} = \frac{\sum_{e \in E\left(\Gamma^*\right)} (c(e) - \mu + \mu)}{\left|\Gamma^*\right|} = \frac{\sum_{e \in E\left(\Gamma^*\right)} (c(e) - \mu) + \left|\Gamma^*\right| \mu}{\left|\Gamma^*\right|} \\
+  &= \frac{\sum_{e \in E\left(\Gamma^*\right)} c'(e)}{\left|\Gamma^*\right|} + \mu = \frac{c'\left(\Gamma^*\right)}{\left|\Gamma^*\right|} + \mu = \frac{0}{\left|\Gamma^*\right|} + \mu = 0 + \mu = \mu.
+\end{align*}
+This completes the proof.
+
+\begin{algorithm}
+  $d_0(s) \leftarrow 0$ \\
+  $d_k(j) \leftarrow \infty$ for all $1 \leq k \leq n, j \in V$ \\
+  $p_k(j) \leftarrow \textbf{null}$ for all $0 \leq k \leq n, j \in V$ \\
+  \For{$k \leftarrow 1, \ldots, n$}{
+    \For{$(i, j) \in E$}{
+      \If{$d_{k - 1}(i) + c(i, j) < d_k(j)$}{
+        $d_k(j) \leftarrow d_{k - 1}(i) + c(i, j)$ \\
+        $p_k(j) \leftarrow i$
+      }
+    }
+  }
+  $\mu \leftarrow \infty$ \\
+  \For{$j \in V$}{
+    $\nu \leftarrow -\infty$ \\
+    \For{$k \leftarrow 0, \ldots, n - 1$}{
+      $\nu \leftarrow \max(\nu, \frac{d_n(j) - d_k(j)}{n - j})$
+    }
+    \If{$\nu < \mu$}
+    {
+      $\mu \leftarrow \nu$ \\
+      $j^* \leftarrow j$
+    }
+  }
+  $P = \{ (v_1, v_2), \ldots, (v_{n - 1}, v_n) \} \leftarrow \text{path formed by following $p_n$ from $j^*$ backwards}$ \\
+  \For{$p \leftarrow 1, \ldots, n - 1$}{
+    \For{$q \leftarrow p + 1, \ldots, n$}{
+      \If{$v_p = v_q$}{
+        \Return{$\Gamma^* = \{ (v_p, v_{p + 1}), \ldots, (v_{q - 1}, v_q) \}$}
+      }
+    }
+  }
+  \caption{An algorithm for computing the minimum mean-cost cycle.}
+  \label{alg:min-mean-cost-cycle}
+\end{algorithm}
+
+\bibliographystyle{abbrvnat}
+\bibliography{bellmanford.bib}
+
+\end{document}
